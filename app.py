@@ -8,6 +8,10 @@ import streamlit as st
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 
+# Set light theme for plots
+plt.style.use('seaborn-v0_8-whitegrid')
+sns.set_style("whitegrid")
+
 class UberPuneAnalysis:
     def __init__(self, data_path='pune_uber_rides.csv'):
         try:
@@ -58,25 +62,27 @@ class UberPuneAnalysis:
 
     def analyze_peak_hours(self):
         hourly_rides = self.df['hour'].value_counts().sort_index()
-        fig, ax = plt.subplots(figsize=(12, 6))
-        sns.barplot(x=hourly_rides.index, y=hourly_rides.values, ax=ax)
-        ax.set_title('Hourly Distribution of Uber Rides in Pune')
-        ax.set_xlabel('Hour of Day')
-        ax.set_ylabel('Number of Rides')
+        fig, ax = plt.subplots(figsize=(10, 5))
+        sns.barplot(x=hourly_rides.index, y=hourly_rides.values, ax=ax, color='#3498db')
+        ax.set_title('Hourly Distribution of Uber Rides in Pune', fontsize=14)
+        ax.set_xlabel('Hour of Day', fontsize=12)
+        ax.set_ylabel('Number of Rides', fontsize=12)
         ax.set_xticks(range(24))
         ax.grid(True, alpha=0.3)
+        plt.tight_layout()
         return fig
 
     def analyze_weekly_pattern(self):
         days_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         weekly_rides = self.df['day'].value_counts().reindex(days_order)
-        fig, ax = plt.subplots(figsize=(12, 6))
-        sns.barplot(x=weekly_rides.index, y=weekly_rides.values, ax=ax)
-        ax.set_title('Weekly Distribution of Uber Rides in Pune')
-        ax.set_xlabel('Day of Week')
-        ax.set_ylabel('Number of Rides')
+        fig, ax = plt.subplots(figsize=(10, 5))
+        sns.barplot(x=weekly_rides.index, y=weekly_rides.values, ax=ax, color='#2ecc71')
+        ax.set_title('Weekly Distribution of Uber Rides in Pune', fontsize=14)
+        ax.set_xlabel('Day of Week', fontsize=12)
+        ax.set_ylabel('Number of Rides', fontsize=12)
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
         ax.grid(True, alpha=0.3)
+        plt.tight_layout()
         return fig
 
     def analyze_popular_locations(self):
@@ -114,19 +120,21 @@ class UberPuneAnalysis:
     def analyze_trip_durations(self):
         trip_durations = self.df['distance'] / 20 * 60  # Approximation: 20 km/h average speed
         self.df['trip_duration'] = trip_durations
-        fig, ax = plt.subplots(figsize=(12, 6))
-        sns.histplot(self.df['trip_duration'], bins=50, kde=True, ax=ax)
-        ax.set_title('Distribution of Trip Durations')
-        ax.set_xlabel('Trip Duration (minutes)')
-        ax.set_ylabel('Frequency')
+        fig, ax = plt.subplots(figsize=(10, 5))
+        sns.histplot(self.df['trip_duration'], bins=50, kde=True, ax=ax, color='#9b59b6')
+        ax.set_title('Distribution of Trip Durations', fontsize=14)
+        ax.set_xlabel('Trip Duration (minutes)', fontsize=12)
+        ax.set_ylabel('Frequency', fontsize=12)
+        plt.tight_layout()
         return fig
 
     def analyze_fare_distribution(self):
-        fig, ax = plt.subplots(figsize=(12, 6))
-        sns.histplot(self.df['fare_amount'], bins=50, kde=True, ax=ax)
-        ax.set_title('Distribution of Fare Amounts')
-        ax.set_xlabel('Fare Amount (₹)')
-        ax.set_ylabel('Frequency')
+        fig, ax = plt.subplots(figsize=(10, 5))
+        sns.histplot(self.df['fare_amount'], bins=50, kde=True, ax=ax, color='#e74c3c')
+        ax.set_title('Distribution of Fare Amounts', fontsize=14)
+        ax.set_xlabel('Fare Amount (₹)', fontsize=12)
+        ax.set_ylabel('Frequency', fontsize=12)
+        plt.tight_layout()
         return fig
 
     def generate_summary_stats(self):
@@ -139,7 +147,39 @@ class UberPuneAnalysis:
         }
 
 def main():
-    st.set_page_config(page_title='Uber Pune Analysis Dashboard', layout='wide')
+    # Set light theme for Streamlit
+    st.set_page_config(
+        page_title='Uber Pune Analysis Dashboard', 
+        layout='wide',
+        initial_sidebar_state='collapsed'
+    )
+    
+    # Apply custom CSS to use light theme and center content
+    st.markdown("""
+        <style>
+        .main {
+            background-color: #ffffff;
+            color: #333333;
+        }
+        .stApp {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .block-container {
+            max-width: 1000px;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .stPlot {
+            width: 70% !important;
+            margin: 0 auto;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
     analyzer = UberPuneAnalysis()
 
     st.title('Uber Rides Analysis - Pune')
@@ -153,22 +193,33 @@ def main():
         col3.metric('Average Distance', f"{summary_stats['average_distance']:.2f} km")
 
     st.subheader('Peak Hours Analysis')
-    st.pyplot(analyzer.analyze_peak_hours())
+    # Create a container to control width
+    col1, _, _ = st.columns([7, 1.5, 1.5])
+    with col1:
+        st.pyplot(analyzer.analyze_peak_hours())
 
     st.subheader('Weekly Pattern')
-    st.pyplot(analyzer.analyze_weekly_pattern())
+    col1, _, _ = st.columns([7, 1.5, 1.5])
+    with col1:
+        st.pyplot(analyzer.analyze_weekly_pattern())
 
     st.subheader('Popular Locations')
-    map_file = analyzer.analyze_popular_locations()
-    with open(map_file, 'r') as f:
-        map_html = f.read()
-    st.components.v1.html(map_html, height=600)
+    col1, _, _ = st.columns([7, 1.5, 1.5])
+    with col1:
+        map_file = analyzer.analyze_popular_locations()
+        with open(map_file, 'r') as f:
+            map_html = f.read()
+        st.components.v1.html(map_html, height=500)
 
     st.subheader('Trip Duration Analysis')
-    st.pyplot(analyzer.analyze_trip_durations())
+    col1, _, _ = st.columns([7, 1.5, 1.5])
+    with col1:
+        st.pyplot(analyzer.analyze_trip_durations())
 
     st.subheader('Fare Distribution')
-    st.pyplot(analyzer.analyze_fare_distribution())
+    col1, _, _ = st.columns([7, 1.5, 1.5])
+    with col1:
+        st.pyplot(analyzer.analyze_fare_distribution())
 
 if __name__ == '__main__':
     main()
