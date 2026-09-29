@@ -32,7 +32,7 @@ Ensure you have **Python 3.8+** installed on your system.
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/PrathameshBhagwat/Uber_Ride_Data_Analysis-.git
+git clone https://github.com/makarkomal04/Uber-Ride-Analysis.git
 cd Uber_Ride_Data_Analysis-
 ```
 
